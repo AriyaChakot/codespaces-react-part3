@@ -1,27 +1,59 @@
+import { useEffect, useState } from 'react';
 import './Shop.css';
+import axios from 'axios';
 
 const Item = (props) => {
   return (
-    <div>
-      <img src={props.img} width={200} height={200} alt={props.name} /><br/>
-      id: {props.id}<br/>
-      Name: {props.name}<br/>
-      Price: {props.price}<br/>
+    <div onClick={() => props.callback(props.id)}>
+      <img src={props.img} width={200} height={200} alt={props.name} /><br />
+      id: {props.id}<br />
+      Name: {props.name}<br />
+      Price: {props.price} baht<br />
     </div>
   );
-}
+};
 
 const Shop = () => {
-  const products = [
-    {id: 0, name: "Notebook Acer Swift", price: 45900, img: "https://img.advice.co.th/images_nas/pic_product4/A0147295/A0147295_s.jpg"},
-    {id: 1, name: "Notebook Asus Vivo", price: 19900, img: "https://img.advice.co.th/images_nas/pic_product4/A0146010/A0146010_s.jpg"},
-    {id: 2, name: "Notebook Lenovo Ideapad", price: 32900, img: "https://img.advice.co.th/images_nas/pic_product4/A0149009/A0149009_s.jpg"},
-    {id: 3, name: "Notebook MSI Prestige", price: 54900, img: "https://img.advice.co.th/images_nas/pic_product4/A0149954/A0149954_s.jpg"},
-    {id: 4, name: "Notebook DELL XPS", price: 99900, img: "https://img.advice.co.th/images_nas/pic_product4/A0146335/A0146335_s.jpg"},
-    {id: 5, name: "Notebook HP Envy", price: 46900, img: "https://img.advice.co.th/images_nas/pic_product4/A0145712/A0145712_s.jpg"}
-  ];
+  const [products, setProducts] = useState([]);
+  const [cart, setCart] = useState([]);
+  const url = 'https://studious-yodel-5g49ppv96gq9c7x79-5000.app.github.dev';
 
-  const productsList = products.map(item=><Item {...item}/>)
-  return (<><div className='grid-container'>{productsList}</div></>)
-}
+  useEffect(() => {
+    axios.get(url + '/api/products')
+      .then(response => {
+        setProducts(response.data);
+      })
+      .catch(error => {
+        console.log("Error fetching products:", error);
+      });
+  }, []);
+
+  const handleClick = (id) => {
+    alert("Add success!");
+    setCart([...cart, products.find(item => item.id === id)]);
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  let total = 0;
+  const productsList = products.map(item => <Item key={item.id} callback={handleClick} {...item} />);
+  const cartList = cart.map(item => <div key={item.id}>{item.id} {item.name} {item.price} baht</div>);
+  
+  for (let i = 0; i < cart.length; i++) total += cart[i].price;
+
+  return (
+    <>
+      <div className='grid-container'>
+        {productsList}
+      </div>
+      <h1>Cart</h1>
+      <div>{cartList}</div>
+      <button onClick={clearCart}>Clear All</button>
+      <h2>Total: {total} baht</h2>
+    </>
+  );
+};
+
 export default Shop;
